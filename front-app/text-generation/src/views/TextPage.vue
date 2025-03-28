@@ -726,7 +726,7 @@ const reset = () => {
   synonyms.value = [];
   textCount.value = 1;
   lengthText.value = 0;
-  temperature.value = 0;
+  temperature.value = 1;
   sameSynonymCount.value = 0;
   individualSynonymCounts.value = 0;
   texts.value = [];
