@@ -158,19 +158,30 @@ class TextGenerationModel:
         max_length: Optional[int] = None,
         max_length_type: Optional[str] = None,
         theme: Optional[str] = None,
-        key_words: Optional[List[str]] = None,
+        key_words: Optional[List[List[str]]] = None,
         example_text: Optional[str] = None,
         temperature: Optional[float] = 1,
     ) -> List[str]:
         tasks = []
-        for _ in range(num_samples):
+        if key_words:
+            all_combinations = list(itertools.product(*key_words))
+        else:
+            all_combinations = None
+
+        for i in range(num_samples):
+            if all_combinations:
+                combination = all_combinations[i % len(all_combinations)]
+                selected_keywords_str = ", ".join(combination)
+            else:
+                selected_keywords_str = None
+
             tasks.append(
                 asyncio.to_thread(
                     self._generate_local_sync,
                     max_length,
                     max_length_type,
                     theme,
-                    key_words,
+                    selected_keywords_str,
                     example_text,
                     temperature,
                 )
@@ -183,7 +194,7 @@ class TextGenerationModel:
         max_length: Optional[int],
         max_length_type: Optional[str],
         theme: Optional[str],
-        key_words: Optional[List[str]],
+        key_words: Optional[str],
         example_text: Optional[str],
         temperature: Optional[float],
     ) -> str:
@@ -192,9 +203,8 @@ class TextGenerationModel:
                 theme=theme, max_length=max_length, max_length_type=max_length_type
             )
         elif key_words:
-            key_words_str = ", ".join(key_words)
             request_text = KEY_WORDS_TEXT.format(
-                key_words=key_words_str,
+                key_words=key_words,
                 max_length=max_length,
                 max_length_type=max_length_type,
             )
@@ -230,7 +240,7 @@ class TextGenerationModel:
         max_length: Optional[int] = None,
         max_length_type: Optional[str] = None,
         theme: Optional[str] = None,
-        key_words: Optional[List[List[str]]] = None, 
+        key_words: Optional[List[List[str]]] = None,
         example_text: Optional[str] = None,
         temperature: Optional[float] = 1,
     ) -> List[str]:
@@ -319,15 +329,26 @@ class TextGenerationModel:
         temperature: Optional[float] = 1,
     ) -> List[str]:
         tasks = []
-        for _ in range(num_samples):
+        if key_words:
+            all_combinations = list(itertools.product(*key_words))
+        else:
+            all_combinations = None
+
+        for i in range(num_samples):
+            if all_combinations:
+                combination = all_combinations[i % len(all_combinations)]
+                selected_keywords_str = ", ".join(combination)
+            else:
+                selected_keywords_str = None
+            logger.info(selected_keywords_str)
             tasks.append(
                 self._call_ollama_api(
                     max_length,
                     max_length_type,
                     theme,
-                    key_words,
-                    example_text,
-                    temperature,
+                    key_words=selected_keywords_str,
+                    example_text=example_text,
+                    temperature=temperature,
                 )
             )
         generated_texts = await asyncio.gather(*tasks)
