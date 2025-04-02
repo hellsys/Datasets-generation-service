@@ -22,12 +22,9 @@ COPY . .
 
 RUN mkdir -p /app/models/cache
 
-ARG MODEL_PROVIDER
-ARG HUGGINGFACE_TOKEN
-
 EXPOSE 8000
 
-# RUN chmod +x entrypoint.sh
+RUN chmod +x entrypoint.sh
 ENTRYPOINT ["/bin/sh", "entrypoint.sh"]
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
